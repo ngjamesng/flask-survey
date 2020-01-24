@@ -1,16 +1,16 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 from surveys import satisfaction_survey, personality_quiz
 
 app = Flask(__name__)
-responses = []
+form_responses = []
+# go off len
 
 
 @app.route("/")
 def home():
     title = satisfaction_survey.title
     instructions = satisfaction_survey.instructions
-    # print(fatisfaction_survey)
-    # title = "HELOOOO"
+
     return render_template(
         "index.html",
         survey_title=title,
@@ -19,11 +19,23 @@ def home():
     )
 
 
-@app.route("/questions/0")
-def show_question():
-    question = satisfaction_survey.questions[0].question
-    print(question)
-    return render_template("question-form.html", 
-        question=question
-    )
+@app.route("/questions/<int:question_num>")
+def show_question(question_num):
+    question = satisfaction_survey.questions[question_num].question
+    choices = satisfaction_survey.questions[question_num].choices
 
+    return render_template("question-form.html",
+                           question=question,
+                           choices=choices,
+                           )
+    # question_num=question_num
+
+
+@app.route('/answer', methods=['POST'])
+def handle_answer():
+    answer = request.form.get('choice')
+    form_responses.append(answer)
+
+    # REDIRECT to question/num
+    return redirect(f"/questions/{len(form_responses)}")
+    # question=question, choices=choices
